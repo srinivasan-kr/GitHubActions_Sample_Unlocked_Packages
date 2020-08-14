@@ -27,7 +27,7 @@ on:
         default: 1000    
 
 jobs:
-  deploy:
+  createVersion:
     runs-on: ubuntu-latest
     container:
       image: jfgarcia268/sfdx_vlocity_java:v13.0
@@ -43,9 +43,9 @@ jobs:
         SOURCE_FOLDER: ${{ github.event.inputs.sourceFolder }}
         WAIT: ${{ github.event.inputs.waitTime }}  
       run: |
-        echo ${{ secrets[github.event.inputs.targetEnv] }}  > env.sfdx
+        echo ${{ secrets.SFDX_URL_DEVHUB }}  > env.sfdx
         sfdx force:auth:sfdxurl:store -d -a ALIAS -f env.sfdx
-        COMMAND="sfdx force:package:version:create -p ${PACKAGE_NAME} -d ${SOURCE_FOLDER} -k ${KEY} --wait ${WAIT} -v ${SFDX_URL_DEVHUB}"      
+        COMMAND="sfdx force:package:version:create -p ${PACKAGE_NAME} -d ${SOURCE_FOLDER} -k ${KEY} --wait ${WAIT} -v ALIAS"      
         if [ $RUN_APEX_TESTS == 'true' ]; then
           echo "Adding Code Coverage" 
           COMMAND="${COMMAND} --codecoverage " 
