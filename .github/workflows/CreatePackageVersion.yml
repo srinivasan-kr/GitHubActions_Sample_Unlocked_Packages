@@ -8,11 +8,11 @@ on:
       runApexTest:
         description: 'Run Apex Code Coverage'     
         required: true
-        default: false
+        default: 'false'
       skipValidation:
         description: 'Skip Package Validation'     
         required: true
-        default: false   
+        default: 'false'   
       packageName:
         description: 'Package Name'     
         required: true
