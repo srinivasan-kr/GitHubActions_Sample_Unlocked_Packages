@@ -46,7 +46,7 @@ jobs:
         echo ${{ secrets.SFDX_URL_DEVHUB }}  > env.sfdx
         sfdx force:auth:sfdxurl:store -d -a ALIAS -f env.sfdx
         COMMAND="sfdx force:package:version:create -p ${PACKAGE_NAME} -d ${SOURCE_FOLDER} -k ${{ secrets.KEY }} --wait ${WAIT} -v ALIAS"      
-        if [ "'${RUN_APEX_TESTS}'"" == 'true' ]; then
+        if [ "'${RUN_APEX_TESTS}'" == 'true' ]; then
           echo "Adding Code Coverage" 
           COMMAND="${COMMAND} --codecoverage " 
         fi
