@@ -6,6 +6,11 @@ on:
       targetEnv:
         description: 'Target Environment'     
         required: true
+        default: 'SIT_SFDX_URL'  
+      packageName:
+        description: 'Package Name'     
+        required: true
+        default: 'BuyHandset'  
 jobs:
   createVersion:
     runs-on: ubuntu-latest
@@ -25,7 +30,7 @@ jobs:
         if [ -f rm PID.txt  ]; then
           rm rm PID.txt  
         fi
-        ./Get_Latest_Version_Package.sh DEVHUB
+        ./Get_Latest_Version_Package.sh DEVHUB ${{ github.event.inputs.packageName }}
         PACKAGE_ID=$(cat PID.txt)
         echo "PACKAGE_ID:${PACKAGE_ID}"
         sfdx force:package:install --package ${PACKAGE_ID} --targetusername=ALIAS --wait 1000 --publishwait 1000 --securitytype=AdminsOnly -k ${{ secrets.KEY }}
@@ -35,8 +40,6 @@ jobs:
       run: |
         echo ${{ secrets[github.event.inputs.targetEnv] }} > env2.sfdx
         sfdx force:auth:sfdxurl:store -d -a ALIAS -f env2.sfdx
-        # Deploy Vlocity
         vlocity -sfdx.username ALIAS -job Deploy_Delta.yaml packDeploy --verbose true --simpleLogging true
-        # Deploy PostJobs
         vlocity -sfdx.username ALIAS --nojob runApex -apex apex/RunProductBatchJobs.cls --verbose true --simpleLogging true
         
