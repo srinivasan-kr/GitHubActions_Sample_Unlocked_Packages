@@ -13,6 +13,19 @@ on:
         description: 'Skip Package Validation'     
         required: true
         default: false   
+      packageName:
+        description: 'Package Name'     
+        required: true
+        default: 'BuyHandset'
+      sourceFolder:
+        description: 'Source Folder Name'     
+        required: true
+        default: 'force-app'  
+      waitTime:
+        description: 'Wait time to create Package'     
+        required: true
+        default: 1000    
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,7 +35,13 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Create Package Version    
+    - name: Create Package Version 
+      env:
+        RUN_APEX_TESTS: ${{ github.event.inputs.runApexTest }}
+        SKIP_VALIDATION: ${{ github.event.inputs.skipValidation }}  
+        PACKAGE_NAME: ${{ github.event.inputs.packageName }}  
+        SOURCE_FOLDER: ${{ github.event.inputs.sourceFolder }}
+        WAIT: ${{ github.event.inputs.waitTime }}  
       run: |
         echo ${{ secrets[github.event.inputs.targetEnv] }}  > env.sfdx
         sfdx force:auth:sfdxurl:store -d -a ALIAS -f env.sfdx
