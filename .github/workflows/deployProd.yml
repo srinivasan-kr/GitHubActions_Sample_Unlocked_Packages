@@ -1,0 +1,44 @@
+name: Deploy / Install 
+
+on: 
+  workflow_dispatch:
+    inputs:
+      targetEnv:
+        description: 'Target Environment'     
+        required: true
+        default: 'SIT_SFDX_URL'  
+      packageName:
+        description: 'Package Name'     
+        required: true
+        default: 'BuyHandset'  
+jobs:
+  createVersion:
+    runs-on: ubuntu-latest
+    container:
+      image: jfgarcia268/sfdx_vlocity_java:v13.0
+    steps:  
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Install Salesforce Package  
+      run: |
+        echo ${{ secrets.SFDX_URL_DEVHUB }}   > env.sfdx
+        sfdx force:auth:sfdxurl:store -d -a DEVHUB -f env.sfdx
+        echo ${{ secrets[github.event.inputs.targetEnv] }} > env2.sfdx
+        sfdx force:auth:sfdxurl:store -d -a ALIAS -f env2.sfdx
+        #Get latest PackageVersion from DevHub and create file "PID.txt" with it
+        if [ -f rm PID.txt  ]; then
+          rm rm PID.txt  
+        fi
+        ./Get_Latest_Version_Package.sh DEVHUB ${{ github.event.inputs.packageName }}
+        PACKAGE_ID=$(cat PID.txt)
+        echo "PACKAGE_ID:${PACKAGE_ID}"
+        sfdx force:package:install --package ${PACKAGE_ID} --targetusername=ALIAS --wait 1000 --publishwait 1000 --securitytype=AdminsOnly -k ${{ secrets.KEY }}
+        sfdx force:data:tree:import --targetusername ALIAS --plan sfdx-data/Account-plan.json || true
+        sfdx force:user:permset:assign --targetusername ALIAS --permsetname HandsetBuy || true
+    - name: Deploy Vlocity  
+      run: |
+        echo ${{ secrets[github.event.inputs.targetEnv] }} > env2.sfdx
+        sfdx force:auth:sfdxurl:store -d -a ALIAS -f env2.sfdx
+        vlocity -sfdx.username ALIAS -job Deploy_Delta.yaml packDeploy --verbose true --simpleLogging true
+        vlocity -sfdx.username ALIAS --nojob runApex -apex apex/RunProductBatchJobs.cls --verbose true --simpleLogging true
