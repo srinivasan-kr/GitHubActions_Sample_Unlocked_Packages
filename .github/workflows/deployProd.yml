@@ -21,8 +21,8 @@ jobs:
         echo ${{ secrets.SFDX_URL_DEVHUB }}   > env.sfdx
         sfdx force:auth:sfdxurl:store -d -a DEVHUB -f env.sfdx
         #Get latest PackageVersion from DevHub and create file "PID.txt" with it
-        if [ -f rm PID.txt  ]; then
-          rm rm PID.txt  
+        if [ -f PID.txt  ]; then
+          rm PID.txt  
         fi
         ./Get_Latest_Version_Package.sh DEVHUB ${{ github.event.inputs.packageName }}
         PACKAGE_ID=$(cat PID.txt)
