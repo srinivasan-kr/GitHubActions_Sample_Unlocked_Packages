@@ -1,0 +1,40 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Create Package Version
+
+on: 
+  workflow_dispatch:
+    inputs:
+      runApexTest:
+        description: 'Run Apex Code Coverage'     
+        required: true
+        default: false
+      skipValidation:
+        description: 'Skip Package Validation'     
+        required: true
+        default: false   
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: jfgarcia268/sfdx_vlocity_java:v13.0
+    steps:  
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Create Package Version    
+      run: |
+        echo ${{ secrets[github.event.inputs.targetEnv] }}  > env.sfdx
+        sfdx force:auth:sfdxurl:store -d -a ALIAS -f env.sfdx
+        COMMAND="sfdx force:package:version:create -p ${PACKAGE_NAME} -d ${SOURCE_FOLDER} -k ${KEY} --wait ${WAIT} -v ${SFDX_URL_DEVHUB}"      
+        if [ $RUN_APEX_TESTS == 'true' ]; then
+          echo "Adding Code Coverage" 
+          COMMAND="${COMMAND} --codecoverage " 
+        fi
+        if [ $SKIP_VALIDATION == 'true' ]; then
+          echo "Adding Skip Validation" 
+          COMMAND="${COMMAND} --skipvalidation " 
+        fi
+        # Run sfdx force:package:version:create 
+        echo "COMMAND:${COMMAND}"
+        ${COMMAND}
