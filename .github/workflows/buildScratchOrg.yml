@@ -2,11 +2,7 @@ name: Build Scratch Org
 
 on: 
   workflow_dispatch:
-    inputs: 
-      packageName:
-        description: 'Package Name'     
-        required: true
-        default: 'BuyHandset'  
+
 jobs:
   CreateOrg:
     runs-on: ubuntu-latest
@@ -31,7 +27,7 @@ jobs:
         sed '/.*─.*/d' org.info > tmpfile
         mv tmpfile org.info  
     - name: Upload Scratch Org Info
-        uses: actions/upload-artifact@v2
-        with:
-          name: Scratch Org Info
-          path: org.info
+      uses: actions/upload-artifact@v2
+      with:
+        name: Scratch Org Info
+        path: org.info
