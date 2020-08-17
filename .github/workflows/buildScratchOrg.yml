@@ -1,0 +1,37 @@
+name: Build Scratch Org
+
+on: 
+  workflow_dispatch:
+    inputs: 
+      packageName:
+        description: 'Package Name'     
+        required: true
+        default: 'BuyHandset'  
+jobs:
+  CreateOrg:
+    runs-on: ubuntu-latest
+    container:
+      image: jfgarcia268/sfdx_vlocity_java:v13.0
+    steps:  
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Login DevHub
+      run: |
+        echo ${{ secrets.SFDX_URL_DEVHUB }}   > env.sfdx
+        sfdx force:auth:sfdxurl:store -d -a DEVHUB -f env.sfdx
+    - name: Create Org
+      run: |
+        sfdx force:org:create --definitionfile config/project-scratch-def.json -a ALIAS --durationdays 29 --targetdevhubusername DEVHUB
+        sfdx force:user:password:generate --targetusername ALIAS --targetdevhubusername DEVHUB
+        if [ -f org.info ]; then
+          rm org.info  
+        fi
+        sfdx force:org:display --verbose --targetusername ALIAS  --verbose >> org.info
+        sed '/.*─.*/d' org.info > tmpfile
+        mv tmpfile org.info  
+    - name: Upload Scratch Org Info
+        uses: actions/upload-artifact@v2
+        with:
+          name: Scratch Org Info
+          path: org.info
