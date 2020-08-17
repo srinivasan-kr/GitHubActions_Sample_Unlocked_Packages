@@ -31,3 +31,22 @@ jobs:
       with:
         name: Scratch Org Info
         path: org.info
+    - name: Deploy Manage Package from sfdx-project.json
+      run: |
+        PACKAGE_ID=$(jq -r '.packageAliases."Vlocity CMT"' sfdx-project.json)
+        sfdx force:package:install -p ${PACKAGE_ID} --targetusername ALIAS -w 1000 --noprompt
+    - name: Deploy and Setup Salesforce
+      run: |
+        sfdx force:source:deploy --sourcepath force-app --targetusername ALIAS --verbose
+        sfdx force:data:tree:import --targetusername ALIAS --plan sfdx-data/Account-plan.json
+        sfdx force:user:permset:assign --targetusername ALIAS --permsetname HandsetBuy
+    - name: Vlocity 1st Time Setup
+      run: |
+        vlocity -sfdx.username ALIAS --nojob packUpdateSettings 
+        vlocity -sfdx.username ALIAS --nojob installVlocityInitial --verbose
+        vlocity -sfdx.username ALIAS --nojob runApex -apex apex/cmt_InitializeOrg.cls
+    - name: Vlocity Deploy
+      run: |
+        vlocity -sfdx.username ALIAS -job Deploy_Delta.yaml packDeploy --verbose true --simpleLogging true
+        vlocity -sfdx.username ALIAS --nojob runApex -apex apex/RunProductBatchJobs.cls
+
