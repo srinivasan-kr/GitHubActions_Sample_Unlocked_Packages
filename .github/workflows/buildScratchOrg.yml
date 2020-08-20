@@ -47,6 +47,6 @@ jobs:
         vlocity -sfdx.username ALIAS --nojob runApex -apex apex/cmt_InitializeOrg.cls
     - name: Vlocity Deploy
       run: |
-        vlocity -sfdx.username ALIAS -job Deploy_Delta.yaml packDeploy --verbose true --simpleLogging true
+        vlocity -sfdx.username ALIAS -job Deploy_Delta.yaml packDeploy --verbose true
         vlocity -sfdx.username ALIAS --nojob runApex -apex apex/RunProductBatchJobs.cls
 
