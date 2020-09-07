@@ -7,7 +7,7 @@ jobs:
   CreateOrg:
     runs-on: ubuntu-latest
     container:
-      image: jfgarcia268/sfdx_vlocity_java:v13.0
+      image: jfgarcia268/sfdx_vlocity_java:latest
     steps:  
     - uses: actions/checkout@v2
       with:
