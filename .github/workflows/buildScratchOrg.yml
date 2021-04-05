@@ -34,6 +34,7 @@ jobs:
     - name: Deploy Manage Package from sfdx-project.json
       run: |
         PACKAGE_ID=$(jq -r '.packageAliases."Vlocity CMT"' sfdx-project.json)
+        echo "$PACKAGE_ID"
         sfdx force:package:install -p ${PACKAGE_ID} --targetusername ALIAS -w 1000 --noprompt
     - name: Deploy and Setup Salesforce
       run: |
